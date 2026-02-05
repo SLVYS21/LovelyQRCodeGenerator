@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>QR Code Cœur Géométrique</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --qr-color: #e60000;
+            --size: 200px; /* Taille de la base du carré */
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: #f4f4f4;
+            margin: 0;
+            font-family: sans-serif;
+        }
+
+        .controls { margin-bottom: 80px; }
+        input { padding: 10px; width: 250px; border-radius: 4px; border: 1px solid #ccc; }
+        button { padding: 10px 20px; background: var(--qr-color); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+
+        /* --- STRUCTURE DU COEUR --- */
+        .heart-wrapper {
+            position: relative;
+            width: var(--size);
+            height: var(--size);
+            transform: rotate(-45deg);
+        }
+
+        /* Le carré central et les deux "oreilles" */
+        .qr-part {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: white;
+        }
+
+        #main-qr { z-index: 2; }
+
+        #left-circle {
+            top: calc(var(--size) / -2);
+            left: 0;
+            border-radius: 50% 50% 0 0;
+            z-index: 1;
+        }
+
+        #right-circle {
+            top: 0;
+            left: calc(var(--size) / 2);
+            border-radius: 0 50% 50% 0;
+            z-index: 1;
+        }
+
+        /* Style des images QR à l'intérieur */
+        .qr-part img {
+            position: absolute;
+            width: var(--size) !important;
+            height: var(--size) !important;
+            image-rendering: pixelated;
+        }
+
+        /* Ajustement pour que le motif du QR soit continu dans les cercles */
+        #left-circle img { top: 0; }
+        #right-circle img { left: 0; }
+
+        /* Masquer le div technique qui génère le QR */
+        #hidden-qr { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="controls">
+    <input id="text-input" value="https://google.com">
+    <button onclick="updateHeart()">GÉNÉRER</button>
+</div>
+
+<div class="heart-wrapper">
+    <div id="main-qr" class="qr-part"></div>
+    <div id="left-circle" class="qr-part"></div>
+    <div id="right-circle" class="qr-part"></div>
+</div>
+
+<div id="hidden-qr"></div>
+
+<script>
+    function updateHeart() {
+        const text = document.getElementById("text-input").value;
+        const hiddenDiv = document.getElementById("hidden-qr");
+        hiddenDiv.innerHTML = ""; // Vider
+
+        // 1. Générer le QR code dans un div caché
+        new QRCode(hiddenDiv, {
+            text: text,
+            width: 200,
+            height: 200,
+            colorDark: "#e60000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+
+        // Attendre que l'image soit générée
+        setTimeout(() => {
+            const qrImageSrc = hiddenDiv.querySelector('img').src;
+            
+            // 2. Injecter l'image dans les 3 parties du cœur
+            const parts = ['main-qr', 'left-circle', 'right-circle'];
+            parts.forEach(id => {
+                const container = document.getElementById(id);
+                container.innerHTML = `<img src="${qrImageSrc}">`;
+            });
+        }, 50);
+    }
+
+    // Lancer au chargement
+    updateHeart();
+</script>
+
+</body>
+</html>
