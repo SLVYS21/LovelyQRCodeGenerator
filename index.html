@@ -52,12 +52,13 @@
         .btn-export { background: #333; }
 
         /* --- STRUCTURE DU COEUR --- */
-        /* On ajoute un conteneur de capture pour éviter les coupures lors de l'export */
+        /* Conteneur de capture avec padding généreux */
         #capture-area {
-            padding: 50px;
-            display: flex;
+            padding: 100px;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
+            background: transparent;
         }
 
         .heart-wrapper {
@@ -151,15 +152,23 @@
         }, 100);
     }
 
-    // Fonction pour exporter l'image
+    // Fonction pour exporter l'image avec des marges complètes
     function exportHeart() {
         const area = document.getElementById("capture-area");
         
-        // On utilise html2canvas pour transformer le HTML en image
+        // Options optimisées pour capturer l'intégralité de l'image
         html2canvas(area, {
-            backgroundColor: null, // Fond transparent
-            scale: 3,             // Haute résolution pour l'impression
-            logging: false
+            backgroundColor: null,      // Fond transparent
+            scale: 3,                   // Haute résolution
+            logging: false,
+            useCORS: true,              // Pour gérer les images externes
+            allowTaint: true,
+            width: area.scrollWidth,    // Largeur complète incluant le padding
+            height: area.scrollHeight,  // Hauteur complète incluant le padding
+            x: 0,                       // Capture depuis le début
+            y: 0,
+            windowWidth: area.scrollWidth,
+            windowHeight: area.scrollHeight
         }).then(canvas => {
             const link = document.createElement('a');
             link.download = 'qr-code-coeur.png';
