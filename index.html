@@ -2,12 +2,14 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>QR Code Cœur Géométrique</title>
+    <title>QR Code Cœur Géométrique - Exportable</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
     <style>
         :root {
             --qr-color: #e60000;
-            --size: 200px; /* Taille de la base du carré */
+            --size: 200px; 
         }
 
         body {
@@ -18,14 +20,46 @@
             height: 100vh;
             background: #f4f4f4;
             margin: 0;
-            font-family: sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        .controls { margin-bottom: 80px; }
-        input { padding: 10px; width: 250px; border-radius: 4px; border: 1px solid #ccc; }
-        button { padding: 10px 20px; background: var(--qr-color); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .controls { 
+            margin-bottom: 80px; 
+            display: flex;
+            gap: 10px;
+        }
+
+        input { 
+            padding: 12px; 
+            width: 250px; 
+            border-radius: 8px; 
+            border: 1px solid #ccc; 
+            outline: none;
+        }
+
+        button { 
+            padding: 12px 20px; 
+            background: var(--qr-color); 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+
+        button:hover { opacity: 0.9; }
+        .btn-export { background: #333; }
 
         /* --- STRUCTURE DU COEUR --- */
+        /* On ajoute un conteneur de capture pour éviter les coupures lors de l'export */
+        #capture-area {
+            padding: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         .heart-wrapper {
             position: relative;
             width: var(--size);
@@ -33,7 +67,6 @@
             transform: rotate(-45deg);
         }
 
-        /* Le carré central et les deux "oreilles" */
         .qr-part {
             position: absolute;
             width: 100%;
@@ -58,7 +91,6 @@
             z-index: 1;
         }
 
-        /* Style des images QR à l'intérieur */
         .qr-part img {
             position: absolute;
             width: var(--size) !important;
@@ -66,59 +98,77 @@
             image-rendering: pixelated;
         }
 
-        /* Ajustement pour que le motif du QR soit continu dans les cercles */
+        /* Alignement des motifs QR pour la continuité visuelle */
         #left-circle img { top: 0; }
         #right-circle img { left: 0; }
 
-        /* Masquer le div technique qui génère le QR */
         #hidden-qr { display: none; }
     </style>
 </head>
 <body>
 
 <div class="controls">
-    <input id="text-input" value="https://google.com">
+    <input id="text-input" value="https://google.com" placeholder="Entrez votre lien...">
     <button onclick="updateHeart()">GÉNÉRER</button>
+    <button class="btn-export" onclick="exportHeart()">EXPORTER PNG</button>
 </div>
 
-<div class="heart-wrapper">
-    <div id="main-qr" class="qr-part"></div>
-    <div id="left-circle" class="qr-part"></div>
-    <div id="right-circle" class="qr-part"></div>
+<div id="capture-area">
+    <div class="heart-wrapper">
+        <div id="main-qr" class="qr-part"></div>
+        <div id="left-circle" class="qr-part"></div>
+        <div id="right-circle" class="qr-part"></div>
+    </div>
 </div>
 
 <div id="hidden-qr"></div>
 
 <script>
+    // Fonction pour générer le QR Code
     function updateHeart() {
         const text = document.getElementById("text-input").value;
         const hiddenDiv = document.getElementById("hidden-qr");
-        hiddenDiv.innerHTML = ""; // Vider
+        hiddenDiv.innerHTML = ""; 
 
-        // 1. Générer le QR code dans un div caché
         new QRCode(hiddenDiv, {
             text: text,
             width: 200,
             height: 200,
             colorDark: "#e60000",
             colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.H
+            correctLevel: QRCode.CorrectLevel.H // Niveau H requis car une partie du QR est masquée
         });
 
-        // Attendre que l'image soit générée
         setTimeout(() => {
-            const qrImageSrc = hiddenDiv.querySelector('img').src;
-            
-            // 2. Injecter l'image dans les 3 parties du cœur
-            const parts = ['main-qr', 'left-circle', 'right-circle'];
-            parts.forEach(id => {
-                const container = document.getElementById(id);
-                container.innerHTML = `<img src="${qrImageSrc}">`;
-            });
-        }, 50);
+            const qrImg = hiddenDiv.querySelector('img');
+            if (qrImg) {
+                const qrImageSrc = qrImg.src;
+                const parts = ['main-qr', 'left-circle', 'right-circle'];
+                parts.forEach(id => {
+                    document.getElementById(id).innerHTML = `<img src="${qrImageSrc}">`;
+                });
+            }
+        }, 100);
     }
 
-    // Lancer au chargement
+    // Fonction pour exporter l'image
+    function exportHeart() {
+        const area = document.getElementById("capture-area");
+        
+        // On utilise html2canvas pour transformer le HTML en image
+        html2canvas(area, {
+            backgroundColor: null, // Fond transparent
+            scale: 3,             // Haute résolution pour l'impression
+            logging: false
+        }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = 'qr-code-coeur.png';
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+        });
+    }
+
+    // Lancement initial
     updateHeart();
 </script>
 
