@@ -2,109 +2,82 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>QR Code Cœur - Exportable</title>
+    <title>QR Code - Formes</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
     <style>
-        :root {
-            --qr-color: #e60000;
-            --size: 200px;
-        }
-
+        :root { --qr-color: #e60000; --size: 200px; }
         * { box-sizing: border-box; }
-
         body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            background: #f0f0f0;
-            margin: 0;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; min-height: 100vh;
+            background: #f0f0f0; margin: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         .controls {
-            margin-bottom: 50px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
-            justify-content: center;
-            background: white;
-            padding: 18px 24px;
-            border-radius: 14px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 40px;
+            display: flex; flex-wrap: wrap; gap: 10px;
+            align-items: center; justify-content: center;
+            background: white; padding: 18px 24px;
+            border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            max-width: 780px;
         }
 
         input[type="text"] {
-            padding: 10px 14px;
-            width: 240px;
-            border-radius: 8px;
-            border: 1.5px solid #ddd;
-            outline: none;
-            font-size: 14px;
-            transition: border-color 0.2s;
+            padding: 10px 14px; width: 220px;
+            border-radius: 8px; border: 1.5px solid #ddd;
+            outline: none; font-size: 14px; transition: border-color 0.2s;
         }
         input[type="text"]:focus { border-color: #e60000; }
 
         .color-field {
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            font-size: 13px;
-            color: #555;
-            font-weight: 500;
+            display: flex; align-items: center; gap: 7px;
+            font-size: 13px; color: #555; font-weight: 500;
         }
-
-        .color-field label { white-space: nowrap; }
-
         input[type="color"] {
-            width: 36px;
-            height: 36px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            padding: 2px;
-            background: #f4f4f4;
-            outline: 1.5px solid #ddd;
+            width: 36px; height: 36px; border: none;
+            border-radius: 8px; cursor: pointer; padding: 2px;
+            background: #f4f4f4; outline: 1.5px solid #ddd;
         }
 
         .transparent-toggle {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 13px;
-            color: #555;
-            font-weight: 500;
-            cursor: pointer;
-            user-select: none;
+            display: flex; align-items: center; gap: 6px;
+            font-size: 13px; color: #555; font-weight: 500;
+            cursor: pointer; user-select: none;
+        }
+        .transparent-toggle input[type="checkbox"] {
+            width: 16px; height: 16px; accent-color: #e60000; cursor: pointer;
         }
 
-        .transparent-toggle input[type="checkbox"] {
-            width: 16px;
-            height: 16px;
-            accent-color: #e60000;
-            cursor: pointer;
+        /* --- Shape selector --- */
+        .shape-selector {
+            display: flex; gap: 8px; align-items: center;
         }
+        .shape-btn {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 5px; padding: 8px 14px; border-radius: 10px;
+            border: 2px solid #e0e0e0; background: white;
+            cursor: pointer; transition: all 0.18s; font-size: 11px;
+            font-weight: 600; color: #888; user-select: none;
+        }
+        .shape-btn:hover { border-color: #e60000; color: #e60000; }
+        .shape-btn.active { border-color: #e60000; background: #fff0f0; color: #e60000; }
+        .shape-icon { font-size: 20px; line-height: 1; }
 
         button {
-            padding: 10px 18px;
-            background: #e60000;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 13px;
+            padding: 10px 18px; background: #e60000; color: white;
+            border: none; border-radius: 8px; cursor: pointer;
+            font-weight: bold; font-size: 13px;
             transition: opacity 0.2s, transform 0.1s;
         }
         button:hover { opacity: 0.88; transform: translateY(-1px); }
         button:active { transform: translateY(0); }
         .btn-export { background: #222; }
 
-        /* --- Checkerboard bg to show transparency --- */
+        .divider { width: 1px; height: 28px; background: #e0e0e0; margin: 0 4px; }
+
+        /* Checkerboard bg */
         #preview-bg {
             background-image:
                 linear-gradient(45deg, #ccc 25%, transparent 25%),
@@ -113,74 +86,78 @@
                 linear-gradient(-45deg, transparent 75%, #ccc 75%);
             background-size: 16px 16px;
             background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
-            border-radius: 12px;
-            padding: 6px;
-            display: inline-flex;
+            border-radius: 12px; padding: 6px; display: inline-flex;
+            transition: all 0.3s;
         }
 
-        /* --- STRUCTURE DU COEUR --- */
+        /* --- COEUR --- */
         #capture-area {
-            padding: 80px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
+            padding: 80px; display: inline-flex;
+            align-items: center; justify-content: center;
             background: transparent;
         }
 
         .heart-wrapper {
-            position: relative;
-            width: var(--size);
-            height: var(--size);
+            position: relative; width: var(--size); height: var(--size);
             transform: rotate(-45deg);
         }
-
-        .qr-part {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-        }
-
+        .qr-part { position: absolute; width: 100%; height: 100%; overflow: hidden; }
         #main-qr { z-index: 2; }
-
-        #left-circle {
-            top: calc(var(--size) / -2);
-            left: 0;
-            border-radius: 50% 50% 0 0;
-            z-index: 1;
-        }
-
-        #right-circle {
-            top: 0;
-            left: calc(var(--size) / 2);
-            border-radius: 0 50% 50% 0;
-            z-index: 1;
-        }
-
+        #left-circle { top: calc(var(--size) / -2); left: 0; border-radius: 50% 50% 0 0; z-index: 1; }
+        #right-circle { top: 0; left: calc(var(--size) / 2); border-radius: 0 50% 50% 0; z-index: 1; }
         .qr-part img {
-            position: absolute;
-            width: var(--size) !important;
-            height: var(--size) !important;
-            image-rendering: pixelated;
-            transform: rotate(90deg);
+            position: absolute; width: var(--size) !important; height: var(--size) !important;
+            image-rendering: pixelated; transform: rotate(90deg);
         }
-
         #left-circle img { top: 0; }
         #right-circle img { left: 0; }
+
+        /* --- SIMPLE --- */
+        .simple-wrapper {
+            position: relative; display: inline-flex;
+            align-items: center; justify-content: center;
+        }
+        .simple-wrapper img {
+            width: var(--size) !important; height: var(--size) !important;
+            image-rendering: pixelated; display: block;
+        }
+
+        /* Rounded variant */
+        .simple-wrapper.rounded img { border-radius: 16px; overflow: hidden; }
+        .simple-wrapper.rounded { border-radius: 16px; overflow: hidden; }
+
         #hidden-qr { display: none; }
 
-        .divider {
-            width: 1px;
-            height: 28px;
-            background: #e0e0e0;
-            margin: 0 4px;
-        }
+        /* Shape label */
+        .shape-label { font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
 <div class="controls">
     <input id="text-input" type="text" value="https://google.com" placeholder="Entrez votre lien...">
+
+    <div class="divider"></div>
+
+    <!-- Shape selector -->
+    <div class="shape-selector">
+        <div class="shape-btn active" data-shape="heart" onclick="selectShape('heart')">
+            <span class="shape-icon">♥</span>
+            <span class="shape-label">Cœur</span>
+        </div>
+        <div class="shape-btn" data-shape="square" onclick="selectShape('square')">
+            <span class="shape-icon">▪</span>
+            <span class="shape-label">Carré</span>
+        </div>
+        <div class="shape-btn" data-shape="rounded" onclick="selectShape('rounded')">
+            <span class="shape-icon">▪</span>
+            <span class="shape-label" style="position:relative">Arrondi</span>
+        </div>
+        <div class="shape-btn" data-shape="circle" onclick="selectShape('circle')">
+            <span class="shape-icon">●</span>
+            <span class="shape-label">Cercle</span>
+        </div>
+    </div>
 
     <div class="divider"></div>
 
@@ -193,7 +170,7 @@
 
     <div class="color-field">
         <label for="bg-color">Arrière-plan</label>
-        <input type="color" id="bg-color" value="#ffffff" oninput="onBgColorChange()" id="bg-color" style="opacity: 0.4; pointer-events: none;" disabled>
+        <input type="color" id="bg-color" value="#ffffff" oninput="onBgColorChange()" style="opacity: 0.4; pointer-events: none;" disabled>
     </div>
     <label class="transparent-toggle">
         <input type="checkbox" id="transparent-bg" checked onchange="toggleTransparent()">
@@ -208,10 +185,15 @@
 
 <div id="preview-bg">
     <div id="capture-area">
-        <div class="heart-wrapper">
+        <!-- Heart shape (default) -->
+        <div class="heart-wrapper" id="heart-shape">
             <div id="main-qr" class="qr-part"></div>
             <div id="left-circle" class="qr-part"></div>
             <div id="right-circle" class="qr-part"></div>
+        </div>
+        <!-- Simple shape (hidden by default) -->
+        <div class="simple-wrapper" id="simple-shape" style="display:none;">
+            <img id="simple-img" src="" alt="QR">
         </div>
     </div>
 </div>
@@ -219,15 +201,52 @@
 <div id="hidden-qr"></div>
 
 <script>
-    function getBgColor() {
-        const isTransparent = document.getElementById("transparent-bg").checked;
-        if (isTransparent) return "#ffffff"; // QRCode lib ne supporte pas la transparence natif → on gère après
-        return document.getElementById("bg-color").value;
+    let currentShape = 'heart';
+
+    function selectShape(shape) {
+        currentShape = shape;
+        document.querySelectorAll('.shape-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.shape === shape);
+        });
+        updateHeart();
     }
 
-    function getQrColor() {
-        return document.getElementById("qr-color").value;
+    function showShape(shape) {
+        const heartEl = document.getElementById('heart-shape');
+        const simpleEl = document.getElementById('simple-shape');
+        const captureArea = document.getElementById('capture-area');
+
+        if (shape === 'heart') {
+            heartEl.style.display = '';
+            simpleEl.style.display = 'none';
+            captureArea.style.padding = '80px';
+        } else {
+            heartEl.style.display = 'none';
+            simpleEl.style.display = '';
+            captureArea.style.padding = '40px';
+
+            // Reset clip styles
+            simpleEl.style.borderRadius = '0';
+            simpleEl.style.overflow = 'visible';
+            const img = document.getElementById('simple-img');
+            img.style.borderRadius = '0';
+
+            if (shape === 'rounded') {
+                simpleEl.style.borderRadius = '16px';
+                simpleEl.style.overflow = 'hidden';
+            } else if (shape === 'circle') {
+                simpleEl.style.borderRadius = '50%';
+                simpleEl.style.overflow = 'hidden';
+            }
+        }
     }
+
+    function getBgColor() {
+        const isTransparent = document.getElementById("transparent-bg").checked;
+        return isTransparent ? "#ffffff" : document.getElementById("bg-color").value;
+    }
+
+    function getQrColor() { return document.getElementById("qr-color").value; }
 
     function toggleTransparent() {
         const isTransparent = document.getElementById("transparent-bg").checked;
@@ -238,9 +257,7 @@
         updateHeart();
     }
 
-    function onBgColorChange() {
-        updateHeart();
-    }
+    function onBgColorChange() { updateHeart(); }
 
     function updateHeart() {
         const text = document.getElementById("text-input").value || "https://example.com";
@@ -252,70 +269,53 @@
         const bgColor = isTransparent ? "#ffffff" : getBgColor();
 
         new QRCode(hiddenDiv, {
-            text: text,
-            width: 200,
-            height: 200,
-            colorDark: qrColor,
-            colorLight: bgColor,
+            text: text, width: 200, height: 200,
+            colorDark: qrColor, colorLight: bgColor,
             correctLevel: QRCode.CorrectLevel.H
         });
 
         setTimeout(() => {
             const qrImg = hiddenDiv.querySelector('img');
             if (!qrImg) return;
-
             if (isTransparent) {
-                // Rendre le fond transparent via canvas
                 makeTransparent(qrImg.src, qrColor, (transparentSrc) => {
-                    applyQrToHeart(transparentSrc);
+                    applyQrToShape(transparentSrc, isTransparent);
                 });
             } else {
-                applyQrToHeart(qrImg.src);
+                applyQrToShape(qrImg.src, isTransparent);
             }
         }, 100);
     }
 
-    function applyQrToHeart(src) {
-        ['main-qr', 'left-circle', 'right-circle'].forEach(id => {
-            document.getElementById(id).innerHTML = `<img src="${src}">`;
-            if (id !== 'main-qr') {
-                // Reset background for non-main parts when transparent
-                const isTransparent = document.getElementById("transparent-bg").checked;
-                document.getElementById(id).style.background = isTransparent ? "transparent" : "white";
-            }
-        });
+    function applyQrToShape(src, isTransparent) {
+        showShape(currentShape);
 
-        // Sync background of .qr-part divs
-        const isTransparent = document.getElementById("transparent-bg").checked;
-        const bgColor = isTransparent ? "transparent" : getBgColor();
-        document.querySelectorAll('.qr-part').forEach(el => {
-            el.style.background = bgColor;
-        });
+        if (currentShape === 'heart') {
+            ['main-qr', 'left-circle', 'right-circle'].forEach(id => {
+                document.getElementById(id).innerHTML = `<img src="${src}">`;
+            });
+            const bgColor = isTransparent ? "transparent" : getBgColor();
+            document.querySelectorAll('.qr-part').forEach(el => {
+                el.style.background = bgColor;
+            });
+        } else {
+            document.getElementById('simple-img').src = src;
+        }
     }
 
     function makeTransparent(src, qrColor, callback) {
         const img = new Image();
         img.onload = () => {
             const canvas = document.createElement('canvas');
-            canvas.width = img.width;
-            canvas.height = img.height;
+            canvas.width = img.width; canvas.height = img.height;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0);
-
             const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
             const data = imageData.data;
-
-            // Parse QR color
-            const qrRgb = hexToRgb(qrColor);
-
             for (let i = 0; i < data.length; i += 4) {
                 const r = data[i], g = data[i+1], b = data[i+2];
-                // If pixel is close to white → make transparent
-                if (r > 200 && g > 200 && b > 200) {
-                    data[i+3] = 0; // transparent
-                }
+                if (r > 200 && g > 200 && b > 200) data[i+3] = 0;
             }
-
             ctx.putImageData(imageData, 0, 0);
             callback(canvas.toDataURL("image/png"));
         };
@@ -324,38 +324,25 @@
 
     function hexToRgb(hex) {
         const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return result ? {
-            r: parseInt(result[1], 16),
-            g: parseInt(result[2], 16),
-            b: parseInt(result[3], 16)
-        } : { r: 0, g: 0, b: 0 };
+        return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : { r: 0, g: 0, b: 0 };
     }
 
     function exportHeart() {
         const area = document.getElementById("capture-area");
         html2canvas(area, {
-            backgroundColor: null,
-            scale: 3,
-            logging: false,
-            useCORS: true,
-            allowTaint: true,
-            width: area.scrollWidth,
-            height: area.scrollHeight,
-            x: 0,
-            y: 0,
-            windowWidth: area.scrollWidth,
-            windowHeight: area.scrollHeight
+            backgroundColor: null, scale: 3, logging: false,
+            useCORS: true, allowTaint: true,
+            width: area.scrollWidth, height: area.scrollHeight,
+            x: 0, y: 0, windowWidth: area.scrollWidth, windowHeight: area.scrollHeight
         }).then(canvas => {
             const link = document.createElement('a');
-            link.download = 'qr-code-coeur.png';
+            link.download = 'qr-code-' + currentShape + '.png';
             link.href = canvas.toDataURL("image/png");
             link.click();
         });
     }
 
-    // Init
     updateHeart();
 </script>
-
 </body>
 </html>
